@@ -1,16 +1,16 @@
-# park_and_lock
+# Park-and-Lock
 
-A new Flutter project.
+# 📄 Project Description
+The application for this project is a smart storage unit designed to streamline how users interact with physical lockers. Users can:
 
-## Getting Started
+Check real-time availability of units.
+Securely book their lockers.
+Process payments digitally to unlock compartments for easy retrieval.
 
-This project is a starting point for a Flutter application.
+## 🛠 Technologies Used
+This project leverages a modern stack combining mobile development, cloud services, and hardware integration:
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Frontend: Flutter & Dart
+Backend/Infrastructure: Cloud Computing (specific platform mentioned in project details)
+Hardware: IoT (Arduino-based components)
+Version Control: Git & GitHub
