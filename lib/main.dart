@@ -8,118 +8,48 @@ class ParkAndLockApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // Removes the red "Debug" banner
-      home: const LoginPage(),
+      debugShowCheckedModeBanner: false,
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const LoginPage(),
+        '/dashboard': (context) => const DashboardPage(),
+      },
     );
   }
 }
 
+// --- 1. LOGIN PAGE ---
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      // SafeArea prevents the app from overlapping with the iPhone notch
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // 1. Title
-              const Text(
-                'Park & Lock',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                ),
-              ),
+              const Text('Park & Lock', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
               const SizedBox(height: 30),
 
-              // 2. Placeholder Logo (Using an Icon instead of Image)
-              const CircleAvatar(
-                radius: 50,
-                backgroundColor: Colors.redAccent,
-                child: Icon(Icons.sports_motorsports, size: 60, color: Colors.white),
-              ),
+              // --- LOGO ADDED HERE ---
+              Image.asset('assets/Logo.png', height: 120, errorBuilder: (context, error, stackTrace) {
+                return const Icon(Icons.image, size: 80, color: Colors.grey); // Failsafe if filename is wrong
+              }),
+
               const SizedBox(height: 40),
-
-              // 3. Username Input
-              TextField(
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.person_outline),
-                  hintText: 'Username',
-                  filled: true,
-                  fillColor: Colors.grey[100],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
+              _textField('Username', Icons.person_outline),
               const SizedBox(height: 15),
-
-              // 4. Password Input
-              TextField(
-                obscureText: true,
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  hintText: 'Password',
-                  filled: true,
-                  fillColor: Colors.grey[100],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-
-              // 5. Login Button
+              _textField('Password', Icons.lock_outline, isPassword: true),
               const SizedBox(height: 30),
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: () {
-                    print("Login tapped");
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: const Text('Login', style: TextStyle(color: Colors.white, fontSize: 18)),
-                ),
-              ),
-
-              // 6. Forgot Password
-              TextButton(
-                onPressed: () {},
-                child: const Text('Forgot Password?', style: TextStyle(color: Colors.blueGrey)),
-              ),
-
-              const SizedBox(height: 10),
-
-              // 7. Create Account Button
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: OutlinedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const DashboardPage()),
-                    );
-                  },
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.black, width: 1.5),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: const Text('Create Account', style: TextStyle(color: Colors.black, fontSize: 18)),
-                ),
-              ),
+              _actionButton(context, 'Login', Colors.black, Colors.white, () {
+                Navigator.pushReplacementNamed(context, '/dashboard');
+              }),
+              _outlineButton(context, 'Create Account', () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateAccountPage()));
+              }),
             ],
           ),
         ),
@@ -128,95 +58,171 @@ class LoginPage extends StatelessWidget {
   }
 }
 
+// --- 2. DASHBOARD PAGE ---
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Park & Lock'), centerTitle: true),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(30.0),
-          child: Column(
-            children: [
-              const CircleAvatar(
-                radius: 40,
-                backgroundColor: Colors.redAccent,
-                child: Icon(Icons.sports_motorsports, size: 40, color: Colors.white),
-              ),
-              const SizedBox(height: 40),
-              _dashboardButton(context, 'Store Helmet', const ScannerPage()),
-              _dashboardButton(context, 'Retrieve Helmet', null),
-              _dashboardButton(context, 'Helmet Slots', null),
-            ],
-          ),
+      appBar: AppBar(title: const Text('Park & Lock'), centerTitle: true, automaticallyImplyLeading: false),
+      body: Padding(
+        padding: const EdgeInsets.all(30.0),
+        child: Column(
+          children: [
+
+            // --- LOGO ADDED HERE ---
+            Image.asset('assets/Logo.png', height: 80),
+
+            const SizedBox(height: 40),
+            _dashButton(context, 'Store Helmet', const ScannerPage()),
+            _dashButton(context, 'Retrieve Helmet', const HelmetsPage()),
+            _dashButton(context, 'Helmet Slots', const SlotsPage()),
+          ],
         ),
       ),
     );
   }
 
-  Widget _dashboardButton(BuildContext context, String label, Widget? target) {
+  Widget _dashButton(BuildContext context, String label, Widget target) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15.0),
       child: SizedBox(
         width: double.infinity,
-        height: 50,
+        height: 55,
         child: ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[800]),
-          onPressed: () {
-            if (target != null) {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => target));
-            }
-          },
-          child: Text(label, style: const TextStyle(color: Colors.white)),
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[850]),
+          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => target)),
+          child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 16)),
         ),
       ),
     );
   }
 }
 
+// --- 3. STORE FLOW: SCANNER ---
 class ScannerPage extends StatelessWidget {
   const ScannerPage({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(leading: const BackButton()),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 200,
-            height: 200,
-            decoration: BoxDecoration(border: Border.all(color: Colors.black12)),
-            child: const Icon(Icons.qr_code_scanner, size: 100),
-          ),
-          const SizedBox(height: 20),
-          const Text('Scan QR of the slot'),
-          const SizedBox(height: 40),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.greenAccent[100]),
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const SuccessPage()));
-                },
-                child: const Text('Open', style: TextStyle(color: Colors.black)),
-              ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 200, height: 200,
+              decoration: BoxDecoration(border: Border.all(color: Colors.black12)),
+              child: const Icon(Icons.camera_alt, size: 100, color: Colors.black87),
             ),
-          )
-        ],
+            const SizedBox(height: 20),
+            const Text('Scan QR of the slot'),
+            const SizedBox(height: 40),
+            _actionButton(context, 'Open', Colors.tealAccent[400]!, Colors.black, () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const SuccessPage()));
+            }),
+          ],
+        ),
       ),
     );
   }
 }
 
+// --- 4. RETRIEVE FLOW: HELMETS & PAYMENT ---
+class HelmetsPage extends StatelessWidget {
+  const HelmetsPage({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Helmets')),
+      body: Center(
+        child: Container(
+          margin: const EdgeInsets.all(30),
+          padding: const EdgeInsets.all(40),
+          decoration: BoxDecoration(border: Border.all(color: Colors.black12), borderRadius: BorderRadius.circular(20)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Slot #1', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 20),
+              _actionButton(context, 'Retrieve', Colors.green, Colors.white, () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentPage()));
+              }),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class PaymentPage extends StatelessWidget {
+  const PaymentPage({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Payment')),
+      body: Padding(
+        padding: const EdgeInsets.all(30.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Payment amount', style: TextStyle(color: Colors.grey)),
+            const Text('₱ 50.00', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 30),
+            const Text('Choose payment method', style: TextStyle(fontWeight: FontWeight.bold)),
+            _payTile(Icons.credit_card, 'Credit or Debit Card'),
+            _payTile(Icons.account_balance_wallet, 'GCash'),
+            _payTile(Icons.payments, 'Cash'),
+            const Spacer(),
+            _actionButton(context, 'Continue', Colors.green, Colors.white, () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const SuccessPage()));
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _payTile(IconData icon, String title) {
+    return Card(child: ListTile(leading: Icon(icon, color: Colors.blue), title: Text(title), trailing: const Icon(Icons.circle_outlined, size: 20)));
+  }
+}
+
+// --- 5. SLOTS GRID PAGE ---
+class SlotsPage extends StatelessWidget {
+  const SlotsPage({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Slots')),
+      body: GridView.builder(
+        padding: const EdgeInsets.all(20),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 15, mainAxisSpacing: 15),
+        itemCount: 6,
+        itemBuilder: (context, index) {
+          bool isOccupied = index % 3 == 0;
+          return Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: isOccupied ? Colors.red : Colors.green, width: 2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: Text(
+                isOccupied ? 'Occupied' : 'Available',
+                style: TextStyle(color: isOccupied ? Colors.red : Colors.green, fontWeight: FontWeight.bold),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// --- 6. SUCCESS PAGE ---
 class SuccessPage extends StatelessWidget {
   const SuccessPage({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -224,21 +230,43 @@ class SuccessPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.sports_motorsports, size: 100, color: Colors.redAccent),
+
+            // --- LOGO ADDED HERE ---
+            Image.asset('assets/Logo.png', height: 100),
+
             const SizedBox(height: 20),
-            const Text('Helmet Detected!', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            const Icon(Icons.check_circle, size: 60, color: Colors.green),
+            const SizedBox(height: 20),
+            const Text('Action Successful!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             const SizedBox(height: 40),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[800], padding: const EdgeInsets.symmetric(horizontal: 50)),
-              onPressed: () {
-                // Returns to the very first screen
-                Navigator.popUntil(context, (route) => route.isFirst);
-              },
-              child: const Text('Home', style: TextStyle(color: Colors.white)),
-            )
+            _actionButton(context, 'Back to Dashboard', Colors.black, Colors.white, () {
+              Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
+            }),
           ],
         ),
       ),
     );
   }
+}
+
+class CreateAccountPage extends StatelessWidget {
+  const CreateAccountPage({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Create Account')), body: const Center(child: Text('Register Form Placeholder')));
+}
+
+// --- HELPERS ---
+Widget _textField(String hint, IconData icon, {bool isPassword = false}) {
+  return TextField(obscureText: isPassword, decoration: InputDecoration(prefixIcon: Icon(icon), hintText: hint, filled: true, fillColor: Colors.grey[100], border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none)));
+}
+
+Widget _actionButton(BuildContext context, String label, Color bg, Color txt, VoidCallback onPressed) {
+  return SizedBox(width: double.infinity, height: 55, child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: bg, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), onPressed: onPressed, child: Text(label, style: TextStyle(color: txt, fontSize: 18))));
+}
+
+Widget _outlineButton(BuildContext context, String label, VoidCallback onPressed) {
+  return Padding(
+    padding: const EdgeInsets.only(top: 10),
+    child: SizedBox(width: double.infinity, height: 55, child: OutlinedButton(style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.black), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), onPressed: onPressed, child: Text(label, style: const TextStyle(color: Colors.black, fontSize: 18)))),
+  );
 }
