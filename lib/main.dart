@@ -32,11 +32,16 @@ class LoginPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text('Park & Lock', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+                const Text('Park & Lock',
+                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 30),
-                Image.asset('assets/Logo.png', height: 120, errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.image, size: 80, color: Colors.grey);
-                }),
+
+                // --- LOGO ---
+                Image.asset('assets/Logo.png', height: 120,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(Icons.image, size: 80, color: Colors.grey);
+                    }),
+
                 const SizedBox(height: 40),
                 _textField('Username', Icons.person_outline),
                 const SizedBox(height: 15),
@@ -46,7 +51,8 @@ class LoginPage extends StatelessWidget {
                   Navigator.pushReplacementNamed(context, '/dashboard');
                 }),
                 _outlineButton(context, 'Create Account', () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateAccountPage()));
+                  Navigator.push(context, MaterialPageRoute(
+                      builder: (context) => const CreateAccountPage()));
                 }),
               ],
             ),
@@ -63,12 +69,18 @@ class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Park & Lock'), centerTitle: true, automaticallyImplyLeading: false),
+      appBar: AppBar(
+          title: const Text('Park & Lock'),
+          centerTitle: true,
+          automaticallyImplyLeading: false
+      ),
       body: Padding(
         padding: const EdgeInsets.all(30.0),
         child: Column(
           children: [
-            Image.asset('assets/Logo.png', height: 80, errorBuilder: (context, error, stackTrace) => const Icon(Icons.image, size: 80)),
+            Image.asset('assets/Logo.png', height: 80,
+                errorBuilder: (context, error, stackTrace) =>
+                const Icon(Icons.image, size: 80, color: Colors.grey)),
             const SizedBox(height: 40),
             _dashButton(context, 'Store Helmet', const ScannerPage()),
             _dashButton(context, 'Retrieve Helmet', const HelmetsPage()),
@@ -87,7 +99,8 @@ class DashboardPage extends StatelessWidget {
         height: 55,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[850]),
-          onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => target)),
+          onPressed: () => Navigator.push(context, MaterialPageRoute(
+              builder: (context) => target)),
           child: Text(label, style: const TextStyle(color: Colors.white, fontSize: 16)),
         ),
       ),
@@ -95,7 +108,7 @@ class DashboardPage extends StatelessWidget {
   }
 }
 
-// --- 3. CREATE ACCOUNT PAGE (FIXED) ---
+// --- 3. CREATE ACCOUNT PAGE ---
 class CreateAccountPage extends StatelessWidget {
   const CreateAccountPage({super.key});
   @override
@@ -107,9 +120,11 @@ class CreateAccountPage extends StatelessWidget {
           padding: const EdgeInsets.all(30.0),
           child: Column(
             children: [
-              const Text('Join Park & Lock', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              const Text('Join Park & Lock',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
-              const Text('Enter your details to register', style: TextStyle(color: Colors.grey)),
+              const Text('Enter your details to register',
+                  style: TextStyle(color: Colors.grey)),
               const SizedBox(height: 30),
               _textField('Full Name', Icons.person_outline),
               const SizedBox(height: 15),
@@ -120,7 +135,6 @@ class CreateAccountPage extends StatelessWidget {
               _textField('Confirm Password', Icons.lock_reset_outlined, isPassword: true),
               const SizedBox(height: 30),
               _actionButton(context, 'Register Now', Colors.black, Colors.white, () {
-                // Show a success message and go back to login
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Account created successfully! Please login.')),
                 );
@@ -144,11 +158,14 @@ class SuccessPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('assets/Logo.png', height: 100, errorBuilder: (context, error, stackTrace) => const Icon(Icons.check_circle, size: 100, color: Colors.green)),
+            Image.asset('assets/Logo.png', height: 100,
+                errorBuilder: (context, error, stackTrace) =>
+                const Icon(Icons.check_circle, size: 100, color: Colors.green)),
             const SizedBox(height: 20),
             const Icon(Icons.check_circle, size: 60, color: Colors.green),
             const SizedBox(height: 20),
-            const Text('Action Successful!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            const Text('Action Successful!',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
             const SizedBox(height: 40),
             _actionButton(context, 'Back to Dashboard', Colors.black, Colors.white, () {
               Navigator.pushNamedAndRemoveUntil(context, '/dashboard', (route) => false);
@@ -160,47 +177,178 @@ class SuccessPage extends StatelessWidget {
   }
 }
 
-// --- REMAINDER OF PAGES ---
+// --- 5. STORE FLOW: SCANNER ---
 class ScannerPage extends StatelessWidget {
   const ScannerPage({super.key});
   @override
-  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Scan QR')), body: Center(child: _actionButton(context, 'Open', Colors.tealAccent[400]!, Colors.black, () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SuccessPage())))));
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(leading: const BackButton()),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 200, height: 200,
+              decoration: BoxDecoration(border: Border.all(color: Colors.black12)),
+              child: const Icon(Icons.camera_alt, size: 100, color: Colors.black87),
+            ),
+            const SizedBox(height: 20),
+            const Text('Scan QR of the slot'),
+            const SizedBox(height: 40),
+            _actionButton(context, 'Open', Colors.tealAccent[400]!, Colors.black, () {
+              Navigator.push(context, MaterialPageRoute(
+                  builder: (context) => const SuccessPage()));
+            }),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
+// --- 6. RETRIEVE FLOW: HELMETS & PAYMENT ---
 class HelmetsPage extends StatelessWidget {
   const HelmetsPage({super.key});
   @override
-  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Helmets')), body: Center(child: _actionButton(context, 'Retrieve Slot #1', Colors.green, Colors.white, () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PaymentPage())))));
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Helmets')),
+      body: Center(
+        child: Container(
+          margin: const EdgeInsets.all(30),
+          padding: const EdgeInsets.all(40),
+          decoration: BoxDecoration(
+              border: Border.all(color: Colors.black12),
+              borderRadius: BorderRadius.circular(20)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Slot #1',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 20),
+              _actionButton(context, 'Retrieve', Colors.green, Colors.white, () {
+                Navigator.push(context, MaterialPageRoute(
+                    builder: (context) => const PaymentPage()));
+              }),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class PaymentPage extends StatelessWidget {
   const PaymentPage({super.key});
   @override
-  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Payment')), body: Center(child: _actionButton(context, 'Pay ₱ 50.00', Colors.green, Colors.white, () => Navigator.push(context, MaterialPageRoute(builder: (context) => const SuccessPage())))));
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Payment')),
+      body: Padding(
+        padding: const EdgeInsets.all(30.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Payment amount', style: TextStyle(color: Colors.grey)),
+            const Text('₱ 50.00',
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 30),
+            const Text('Choose payment method',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            _payTile(Icons.credit_card, 'Credit or Debit Card'),
+            _payTile(Icons.account_balance_wallet, 'GCash'),
+            _payTile(Icons.payments, 'Cash'),
+            const Spacer(),
+            _actionButton(context, 'Continue', Colors.green, Colors.white, () {
+              Navigator.push(context, MaterialPageRoute(
+                  builder: (context) => const SuccessPage()));
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _payTile(IconData icon, String title) {
+    return Card(child: ListTile(
+        leading: Icon(icon, color: Colors.blue),
+        title: Text(title),
+        trailing: const Icon(Icons.circle_outlined, size: 20)));
+  }
 }
 
+// --- 7. SLOTS GRID PAGE ---
 class SlotsPage extends StatelessWidget {
   const SlotsPage({super.key});
   @override
-  Widget build(BuildContext context) => Scaffold(appBar: AppBar(title: const Text('Slots')), body: const Center(child: Text('Slots Grid View')));
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Slots')),
+      body: GridView.builder(
+        padding: const EdgeInsets.all(20),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2, crossAxisSpacing: 15, mainAxisSpacing: 15),
+        itemCount: 6,
+        itemBuilder: (context, index) {
+          bool isOccupied = index % 3 == 0;
+          return Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: isOccupied ? Colors.red : Colors.green, width: 2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: Text(
+                isOccupied ? 'Occupied' : 'Available',
+                style: TextStyle(
+                    color: isOccupied ? Colors.red : Colors.green,
+                    fontWeight: FontWeight.bold),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 }
 
-// --- SHARED HELPERS ---
+// --- HELPERS ---
 Widget _textField(String hint, IconData icon, {bool isPassword = false}) {
-  return TextField(obscureText: isPassword, decoration: InputDecoration(prefixIcon: Icon(icon), hintText: hint, filled: true, fillColor: Colors.grey[100], border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none)));
+  return TextField(
+      obscureText: isPassword,
+      decoration: InputDecoration(
+          prefixIcon: Icon(icon),
+          hintText: hint,
+          filled: true,
+          fillColor: Colors.grey[100],
+          border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none)));
 }
 
 Widget _actionButton(BuildContext context, String label, Color bg, Color txt, VoidCallback onPressed) {
-  return SizedBox(width: double.infinity, height: 55, child: ElevatedButton(style: ElevatedButton.styleFrom(backgroundColor: bg, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), onPressed: onPressed, child: Text(label, style: TextStyle(color: txt, fontSize: 18))));
+  return SizedBox(
+      width: double.infinity,
+      height: 55,
+      child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+              backgroundColor: bg,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+          onPressed: onPressed,
+          child: Text(label, style: TextStyle(color: txt, fontSize: 18))));
 }
 
 Widget _outlineButton(BuildContext context, String label, VoidCallback onPressed) {
   return Padding(
     padding: const EdgeInsets.only(top: 10),
-    child: SizedBox(width: double.infinity, height: 55, child: OutlinedButton(style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.black), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))), onPressed: onPressed, child: Text(label, style: const TextStyle(color: Colors.black, fontSize: 18)))),
+    child: SizedBox(
+        width: double.infinity,
+        height: 55,
+        child: OutlinedButton(
+            style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.black),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+            onPressed: onPressed,
+            child: Text(label, style: const TextStyle(color: Colors.black, fontSize: 18)))),
   );
-}
-
-Widget _payTile(IconData icon, String title) {
-  return Card(child: ListTile(leading: Icon(icon, color: Colors.blue), title: Text(title), trailing: const Icon(Icons.circle_outlined, size: 20)));
 }
