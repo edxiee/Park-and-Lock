@@ -18,6 +18,7 @@ class ParkAndLockApp extends StatelessWidget {
       routes: {
         '/': (context) => const LoginPage(),
         '/dashboard': (context) => const DashboardPage(),
+        // You can add more named routes later if you want
       },
     );
   }
