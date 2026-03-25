@@ -1,0 +1,1 @@
+{"flutter":{"platforms":{"android":{"default":{"projectId":"park-n-lock","appId":"1:524901385264:android:c5caeafdccb76acfc199f5","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"park-n-lock","configurations":{"android":"1:524901385264:android:c5caeafdccb76acfc199f5","web":"1:524901385264:web:4f8d960c4af69d2bc199f5"}}}}}}
