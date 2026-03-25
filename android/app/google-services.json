@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "524901385264",
+    "project_id": "park-n-lock",
+    "storage_bucket": "park-n-lock.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:524901385264:android:c5caeafdccb76acfc199f5",
+        "android_client_info": {
+          "package_name": "com.example.park_and_lock"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB72mT_-dMAjVOcfKAdiL4Ds7-yxo9B-4E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
