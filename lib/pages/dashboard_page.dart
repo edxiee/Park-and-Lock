@@ -31,9 +31,9 @@ class DashboardPage extends StatelessWidget {
           children: [
             Image.asset(
               'assets/Logo.png',
-              height: 80,
+              height: 200,
               errorBuilder: (context, error, stackTrace) =>
-              const Icon(Icons.image, size: 80, color: Colors.grey),
+              const Icon(Icons.image, size: 200, color: Colors.grey),
             ),
             const SizedBox(height: 40),
             _dashButton(context, 'Store Helmet', const ScannerPage()),
