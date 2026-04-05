@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -213,6 +215,40 @@ class _ScannerPageState extends State<ScannerPage> {
       // ESP32 firmware expects /lockers/<id>/command as a plain string.
       await lockerRef.child('command').set('OPEN');
       _lastUnlockAt = DateTime.now();
+
+      final user = FirebaseAuth.instance.currentUser;
+      var savedToUserAccount = true;
+      if (user != null) {
+        try {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .collection('helmets')
+              .doc(lockerId)
+              .set({
+                'lockerId': lockerId,
+                'status': 'stored',
+                'isStored': true,
+                'updatedAt': FieldValue.serverTimestamp(),
+              }, SetOptions(merge: true));
+        } catch (e) {
+          savedToUserAccount = false;
+          final details = e is FirebaseException
+              ? '${e.code}: ${e.message ?? 'Unknown Firebase error'}'
+              : e.toString();
+          if (mounted) {
+            _showSingleWarning(
+              context,
+              'save_firestore_failed',
+              'Locker opened, but failed to save helmet. $details',
+            );
+          }
+        }
+      }
+
+      if (!savedToUserAccount) {
+        return;
+      }
 
       if (mounted) {
         await Navigator.push(

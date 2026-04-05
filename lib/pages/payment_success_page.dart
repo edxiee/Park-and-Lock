@@ -22,7 +22,8 @@ class PaymentSuccessPage extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
-          onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
+          onPressed: () =>
+              Navigator.popUntil(context, (route) => route.isFirst),
         ),
       ),
       body: SafeArea(
@@ -38,7 +39,9 @@ class PaymentSuccessPage extends StatelessWidget {
                   height: 180,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: theme.colorScheme.primaryContainer.withValues(alpha: 0.18),
+                    color: theme.colorScheme.primaryContainer.withValues(
+                      alpha: 0.18,
+                    ),
                   ),
                   child: Icon(
                     Icons.check_circle_rounded,
@@ -51,7 +54,7 @@ class PaymentSuccessPage extends StatelessWidget {
 
                 // Success Message
                 Text(
-                  'Payment Successful!',
+                  'Helmet Retrieved!',
                   style: theme.textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: theme.colorScheme.onSurface,
@@ -112,7 +115,7 @@ class PaymentSuccessPage extends StatelessWidget {
                       Navigator.pushNamedAndRemoveUntil(
                         context,
                         '/dashboard',
-                            (route) => false,
+                        (route) => false,
                       );
                     },
                     child: const Text(
@@ -170,10 +173,7 @@ class PaymentSuccessPage extends StatelessWidget {
         ),
         Text(
           value,
-          style: const TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-          ),
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
         ),
       ],
     );

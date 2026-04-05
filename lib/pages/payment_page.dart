@@ -1,10 +1,16 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/custom_action_button.dart';
 import 'payment_success_page.dart';
 
 class PaymentPage extends StatefulWidget {
-  const PaymentPage({super.key});
+  const PaymentPage({super.key, required this.lockerId});
+
+  final String lockerId;
 
   @override
   State<PaymentPage> createState() => _PaymentPageState();
@@ -12,6 +18,66 @@ class PaymentPage extends StatefulWidget {
 
 class _PaymentPageState extends State<PaymentPage> {
   String? _selectedPaymentMethod;
+  bool _isProcessing = false;
+
+  Future<void> _completeRetrieval() async {
+    if (_selectedPaymentMethod == null || _isProcessing) {
+      return;
+    }
+
+    final user = FirebaseAuth.instance.currentUser;
+    final databaseUrl = Firebase.app().options.databaseURL;
+
+    if (user == null || databaseUrl == null || databaseUrl.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unable to complete retrieval.')),
+        );
+      }
+      return;
+    }
+
+    setState(() => _isProcessing = true);
+
+    try {
+      final db = FirebaseDatabase.instanceFor(
+        app: Firebase.app(),
+        databaseURL: databaseUrl,
+      );
+
+      final lockerRef = db.ref('lockers/${widget.lockerId}');
+      await lockerRef.child('command').set('OPEN');
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('helmets')
+          .doc(widget.lockerId)
+          .delete();
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PaymentSuccessPage(
+              amount: '₱ 50.00',
+              paymentMethod: _selectedPaymentMethod!,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to complete retrieval.')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
+  }
 
   final List<Map<String, dynamic>> _paymentMethods = [
     {
@@ -81,19 +147,24 @@ class _PaymentPageState extends State<PaymentPage> {
                   itemCount: _paymentMethods.length,
                   itemBuilder: (context, index) {
                     final method = _paymentMethods[index];
-                    final isSelected = _selectedPaymentMethod == method['title'];
+                    final isSelected =
+                        _selectedPaymentMethod == method['title'];
 
                     return Card(
                       elevation: 0,
                       color: isSelected
-                          ? theme.colorScheme.primaryContainer.withValues(alpha: 0.6)
+                          ? theme.colorScheme.primaryContainer.withValues(
+                              alpha: 0.6,
+                            )
                           : theme.colorScheme.surfaceContainerLowest,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                         side: BorderSide(
                           color: isSelected
                               ? theme.colorScheme.primary
-                              : theme.colorScheme.outline.withValues(alpha: 0.2),
+                              : theme.colorScheme.outline.withValues(
+                                  alpha: 0.2,
+                                ),
                           width: isSelected ? 2 : 1,
                         ),
                       ),
@@ -154,19 +225,12 @@ class _PaymentPageState extends State<PaymentPage> {
               SizedBox(
                 width: double.infinity,
                 child: CustomActionButton(
-                  label: 'Continue',
+                  label: _isProcessing ? 'Processing...' : 'Continue',
                   bgColor: theme.colorScheme.primary,
                   textColor: theme.colorScheme.onPrimary,
-                  onPressed: _selectedPaymentMethod == null
+                  onPressed: _selectedPaymentMethod == null || _isProcessing
                       ? null
-                      : () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PaymentSuccessPage(),
-                      ),
-                    );
-                  },
+                      : _completeRetrieval,
                 ),
               ),
             ],
