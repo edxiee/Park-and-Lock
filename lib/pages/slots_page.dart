@@ -1,11 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class SlotsPage extends StatelessWidget {
   const SlotsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final databaseUrl = Firebase.app().options.databaseURL;
+
+    if (databaseUrl == null || databaseUrl.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Helmet Slots'),
+          centerTitle: true,
+          elevation: 0,
+        ),
+        body: const SafeArea(
+          child: Center(
+            child: Text(
+              'Realtime Database URL is missing.\n'
+              'Set databaseURL in firebase_options.dart.',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+      );
+    }
+
+    final lockerStatusRef = FirebaseDatabase.instanceFor(
+      app: Firebase.app(),
+      databaseURL: databaseUrl,
+    ).ref('lockers/locker_01/helmet_inside');
 
     return Scaffold(
       appBar: AppBar(
@@ -16,37 +42,50 @@ class SlotsPage extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
-          child: GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-            ),
-            itemCount: 6,
-            itemBuilder: (context, index) {
-              final slotNumber = index + 1;
-              final isOccupied = index % 3 == 0;
+          child: Center(
+            child: StreamBuilder<DatabaseEvent>(
+              stream: lockerStatusRef.onValue,
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return _buildSingleSlotCard(
+                    context,
+                    isOccupied: false,
+                    statusLabel: 'Error loading status',
+                  );
+                }
 
-              return _buildMinimalSlotCard(
-                context,
-                slotNumber: slotNumber,
-                isOccupied: isOccupied,
-              );
-            },
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                }
+
+                final value = snapshot.data?.snapshot.value;
+                final helmetInside = value is bool
+                    ? value
+                    : value?.toString().toLowerCase() == 'true';
+
+                return _buildSingleSlotCard(
+                  context,
+                  isOccupied: helmetInside,
+                  statusLabel: helmetInside ? 'Occupied' : 'Available',
+                );
+              },
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildMinimalSlotCard(
-      BuildContext context, {
-        required int slotNumber,
-        required bool isOccupied,
-      }) {
+  Widget _buildSingleSlotCard(
+    BuildContext context, {
+    required bool isOccupied,
+    required String statusLabel,
+  }) {
     final theme = Theme.of(context);
 
     return Container(
+      width: 260,
+      height: 260,
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(20),
@@ -78,9 +117,9 @@ class SlotsPage extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // Slot Number
+          // Locker label
           Text(
-            'Slot $slotNumber',
+            'Locker 01',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
               color: isOccupied
@@ -93,7 +132,7 @@ class SlotsPage extends StatelessWidget {
 
           // Minimal Status
           Text(
-            isOccupied ? 'Occupied' : 'Available',
+            statusLabel,
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,

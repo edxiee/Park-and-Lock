@@ -55,6 +55,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '524901385264',
     projectId: 'park-n-lock',
     authDomain: 'park-n-lock.firebaseapp.com',
+    databaseURL: 'https://park-n-lock-default-rtdb.firebaseio.com',
     storageBucket: 'park-n-lock.firebasestorage.app',
     measurementId: 'G-68P1YLP91N',
   );
@@ -64,6 +65,7 @@ class DefaultFirebaseOptions {
     appId: '1:524901385264:android:c5caeafdccb76acfc199f5',
     messagingSenderId: '524901385264',
     projectId: 'park-n-lock',
+    databaseURL: 'https://park-n-lock-default-rtdb.firebaseio.com',
     storageBucket: 'park-n-lock.firebasestorage.app',
   );
 }
