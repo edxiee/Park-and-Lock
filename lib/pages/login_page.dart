@@ -5,7 +5,7 @@ import '../widgets/custom_text_field.dart';
 import '../widgets/custom_action_button.dart';
 import '../widgets/custom_outline_button.dart';
 
-import 'signup_page.dart'; // Rename CreateAccountPage to SignupPage if needed
+import 'signup_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -20,6 +20,7 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
 
   bool _isLoading = false;
+  bool _isPasswordVisible = false;
   String? _errorMessage;
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -78,35 +79,62 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.colorScheme.surface,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 50.0),
+            padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 40.0),
             child: Form(
               key: _formKey,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    'Park & Lock',
-                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 30),
-                  Image.asset(
-                    'assets/Logo.png',
-                    height: 120,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Icon(Icons.image, size: 80, color: Colors.grey);
-                    },
-                  ),
                   const SizedBox(height: 40),
 
-                  // Email field
+                  // App Logo / Branding
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primaryContainer.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Image.asset(
+                      'assets/Logo.png',
+                      height: 110,
+                      errorBuilder: (context, error, stackTrace) => Icon(
+                        Icons.lock_rounded,
+                        size: 90,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  Text(
+                    'Park & Lock',
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+                  Text(
+                    'Sign in to continue',
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+
+                  const SizedBox(height: 50),
+
+                  // Email Field
                   CustomTextField(
-                    hint: 'Email',
-                    icon: Icons.person_outline,
+                    hint: 'Email address',
+                    icon: Icons.email_outlined,
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
@@ -119,14 +147,27 @@ class _LoginPageState extends State<LoginPage> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 15),
 
-                  // Password field
+                  const SizedBox(height: 16),
+
+                  // Password Field with Eye Toggle
                   CustomTextField(
                     hint: 'Password',
-                    icon: Icons.lock_outline,
+                    icon: Icons.lock_outline_rounded,
                     isPassword: true,
+                    obscureText: !_isPasswordVisible,
                     controller: _passwordController,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        color: theme.colorScheme.primary,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isPasswordVisible = !_isPasswordVisible;
+                        });
+                      },
+                    ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter your password';
@@ -138,36 +179,39 @@ class _LoginPageState extends State<LoginPage> {
                     },
                   ),
 
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
 
-                  // Error message
+                  // Error Message
                   if (_errorMessage != null)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.only(top: 8, bottom: 8),
                       child: Text(
                         _errorMessage!,
-                        style: const TextStyle(color: Colors.red),
+                        style: TextStyle(
+                          color: theme.colorScheme.error,
+                          fontSize: 14,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 30),
 
                   // Login Button
                   _isLoading
                       ? const CircularProgressIndicator()
                       : CustomActionButton(
-                    label: 'Login',
-                    bgColor: Colors.black,
-                    textColor: Colors.white,
+                    label: 'Sign In',
+                    bgColor: theme.colorScheme.primary,
+                    textColor: theme.colorScheme.onPrimary,
                     onPressed: _login,
                   ),
 
-                  const SizedBox(height: 15),
+                  const SizedBox(height: 16),
 
                   // Create Account Button
                   CustomOutlineButton(
-                    label: 'Create Account',
+                    label: 'Create new account',
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -177,6 +221,8 @@ class _LoginPageState extends State<LoginPage> {
                       );
                     },
                   ),
+
+                  const SizedBox(height: 40),
                 ],
               ),
             ),

@@ -1,9 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'scanner_page.dart';
 import 'helmets_page.dart';
 import 'slots_page.dart';
-import 'login_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -128,8 +128,6 @@ class DashboardPage extends StatelessWidget {
         required Color color,
         required VoidCallback onTap,
       }) {
-    final theme = Theme.of(context);
-
     return SizedBox(
       width: double.infinity,
       height: 68,
@@ -196,6 +194,22 @@ class DashboardPage extends StatelessWidget {
     );
   }
 
+  Future<void> _logout(BuildContext context) async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      if (context.mounted) {
+        // Explicitly navigate to the /login named route and clear history
+        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to logout. Please try again.')),
+        );
+      }
+    }
+  }
+
   void _showLogoutConfirmation(BuildContext context) {
     final theme = Theme.of(context);
 
@@ -213,10 +227,7 @@ class DashboardPage extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(context); // close dialog
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginPage()),
-              );
+              _logout(context);
             },
             child: Text(
               'Logout',
