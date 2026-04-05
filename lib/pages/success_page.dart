@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../widgets/custom_action_button.dart';
 
 class SuccessPage extends StatelessWidget {
-  const SuccessPage({super.key});
+  const SuccessPage({super.key, this.lockerId});
+
+  final String? lockerId;
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +18,8 @@ class SuccessPage extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
-          onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
+          onPressed: () =>
+              Navigator.popUntil(context, (route) => route.isFirst),
         ),
       ),
       body: SafeArea(
@@ -32,7 +35,9 @@ class SuccessPage extends StatelessWidget {
                   height: 160,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: theme.colorScheme.primaryContainer.withValues(alpha: 0.15),
+                    color: theme.colorScheme.primaryContainer.withValues(
+                      alpha: 0.15,
+                    ),
                   ),
                   child: Icon(
                     Icons.check_rounded,
@@ -56,7 +61,9 @@ class SuccessPage extends StatelessWidget {
                 const SizedBox(height: 12),
 
                 Text(
-                  'Your QR scan was completed successfully.\nThe slot has been updated.',
+                  lockerId == null
+                      ? 'Your QR scan was completed successfully.\nThe slot has been updated.'
+                      : 'Locker $lockerId unlocked successfully.\nYou may now open the locker door.',
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                     height: 1.5,
@@ -77,7 +84,7 @@ class SuccessPage extends StatelessWidget {
                       Navigator.pushNamedAndRemoveUntil(
                         context,
                         '/dashboard',
-                            (route) => false,
+                        (route) => false,
                       );
                     },
                   ),
