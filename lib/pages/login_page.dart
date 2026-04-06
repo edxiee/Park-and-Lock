@@ -202,7 +202,7 @@ class _LoginPageState extends State<LoginPage> {
                   _isLoading
                       ? const CircularProgressIndicator()
                       : CustomActionButton(
-                    label: 'Sign In',
+                    label: 'Login',
                     bgColor: theme.colorScheme.primary,
                     textColor: theme.colorScheme.onPrimary,
                     onPressed: _login,
