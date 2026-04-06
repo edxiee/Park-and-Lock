@@ -440,7 +440,6 @@ class ScannerOverlayPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     const double cornerLength = 40;
-    const double cornerRadius = 8;
 
     // Top-left
     canvas.drawLine(const Offset(30, 30), Offset(cornerLength + 30, 30), paint);
