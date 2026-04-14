@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -19,12 +20,12 @@ class ScannerPage extends StatefulWidget {
 class _ScannerPageState extends State<ScannerPage> {
   static const String _allowedLockerId = 'locker_01';
   static const Duration _unlockCooldown = Duration(seconds: 8);
+  static const Duration _helmetDetectTimeout = Duration(seconds: 20);
 
   final MobileScannerController _controller = MobileScannerController(
     autoStart: true,
     detectionSpeed: DetectionSpeed.noDuplicates,
     formats: const [BarcodeFormat.qrCode],
-    // Desktop webcams on web usually map to the "front/user" camera.
     facing: kIsWeb ? CameraFacing.front : CameraFacing.back,
   );
 
@@ -144,6 +145,31 @@ class _ScannerPageState extends State<ScannerPage> {
     return 'locker_${number.toString().padLeft(2, '0')}';
   }
 
+  bool _helmetDetected(dynamic value) {
+    if (value is bool) {
+      return value;
+    }
+    return value?.toString().toLowerCase() == 'true';
+  }
+
+  Future<bool> _waitForHelmetDetection(DatabaseReference lockerRef) async {
+    final sensorRef = lockerRef.child('helmet_inside');
+
+    final initial = await sensorRef.get();
+    if (_helmetDetected(initial.value)) {
+      return true;
+    }
+
+    try {
+      await sensorRef.onValue
+          .firstWhere((event) => _helmetDetected(event.snapshot.value))
+          .timeout(_helmetDetectTimeout);
+      return true;
+    } on TimeoutException {
+      return false;
+    }
+  }
+
   Future<void> _handleBarcode(BuildContext context, String rawValue) async {
     if (_isProcessing) {
       return;
@@ -197,9 +223,7 @@ class _ScannerPageState extends State<ScannerPage> {
       final helmetInsideSnapshot = await lockerRef.child('helmet_inside').get();
 
       final raw = helmetInsideSnapshot.value;
-      final isOccupied = raw is bool
-          ? raw
-          : raw?.toString().toLowerCase() == 'true';
+      final isOccupied = _helmetDetected(raw);
 
       if (isOccupied) {
         if (mounted) {
@@ -215,6 +239,26 @@ class _ScannerPageState extends State<ScannerPage> {
       // ESP32 firmware expects /lockers/<id>/command as a plain string.
       await lockerRef.child('command').set('OPEN');
       _lastUnlockAt = DateTime.now();
+
+      if (mounted) {
+        _showSingleWarning(
+          context,
+          'waiting_for_helmet',
+          'Locker opened. Waiting for helmet detection...',
+        );
+      }
+
+      final helmetDetected = await _waitForHelmetDetection(lockerRef);
+      if (!helmetDetected) {
+        if (mounted) {
+          _showSingleWarning(
+            context,
+            'helmet_not_detected',
+            'No helmet detected. Storage record was not saved.',
+          );
+        }
+        return;
+      }
 
       final user = FirebaseAuth.instance.currentUser;
       var savedToUserAccount = true;
@@ -384,7 +428,7 @@ class _ScannerPageState extends State<ScannerPage> {
                   const SizedBox(height: 12),
 
                   Text(
-                    'Supported format: LOCKER:locker_01 or {"lockerId":"locker_01"}',
+                    'Locker 1',
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),

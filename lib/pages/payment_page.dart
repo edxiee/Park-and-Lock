@@ -23,7 +23,7 @@ class _PaymentPageState extends State<PaymentPage> {
   String _amountDisplay = '₱ 0.00';
   bool _isLoading = true;
 
-  // Calculate payment based on updatedAt
+  // Calculate payment   
   Future<void> _calculatePayment() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
