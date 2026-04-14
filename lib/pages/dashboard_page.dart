@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'scanner_page.dart';
 import 'helmets_page.dart';
 import 'slots_page.dart';
+import 'tutorial_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -110,6 +111,17 @@ class DashboardPage extends StatelessWidget {
                 onTap: () => _navigateTo(context, const SlotsPage()),
               ),
 
+              const SizedBox(height: 16),
+
+              // NEW: Tutorial Button
+              _buildActionButton(
+                context,
+                label: 'How to Use (Tutorial)',
+                icon: Icons.help_outline_rounded,
+                color: Colors.orange,
+                onTap: () => _navigateTo(context, const TutorialPage()),
+              ),
+
               const Spacer(),
 
               // Logout Button (more subtle & modern)
@@ -198,7 +210,6 @@ class DashboardPage extends StatelessWidget {
     try {
       await FirebaseAuth.instance.signOut();
       if (context.mounted) {
-        // Explicitly navigate to the /login named route and clear history
         Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
       }
     } catch (e) {
@@ -226,7 +237,7 @@ class DashboardPage extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // close dialog
+              Navigator.pop(context);
               _logout(context);
             },
             child: Text(
