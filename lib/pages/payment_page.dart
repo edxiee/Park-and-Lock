@@ -19,6 +19,70 @@ class PaymentPage extends StatefulWidget {
 class _PaymentPageState extends State<PaymentPage> {
   String? _selectedPaymentMethod;
   bool _isProcessing = false;
+  double _calculatedAmount = 0.0;
+  String _amountDisplay = '₱ 0.00';
+  bool _isLoading = true;
+
+  // Calculate payment based on updatedAt
+  Future<void> _calculatePayment() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    try {
+      final helmetDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('helmets')
+          .doc(widget.lockerId)
+          .get();
+
+      if (!helmetDoc.exists || !helmetDoc.data()!.containsKey('updatedAt')) {
+        setState(() {
+          _calculatedAmount = 0.0;
+          _amountDisplay = '₱ 0.00';
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final Timestamp updatedAtTimestamp = helmetDoc['updatedAt'];
+      final DateTime startTime = updatedAtTimestamp.toDate();
+      final DateTime now = DateTime.now();
+
+      final Duration difference = now.difference(startTime);
+      final double minutesElapsed = difference.inMinutes.toDouble();
+
+      double amount = 0.0;
+
+      if (minutesElapsed > 10) {
+        // First 10 minutes are free → charge ₱10 after grace period
+        amount = 10.0;
+
+        // Additional time beyond 10 minutes
+        final double extraMinutes = minutesElapsed - 10;
+
+        // Every 5 minutes after grace = +₱0.25
+        final int fiveMinBlocks = (extraMinutes / 5).ceil();
+        amount += fiveMinBlocks * 0.25;
+      }
+      // Else: within 10 mins → ₱0.00
+
+      setState(() {
+        _calculatedAmount = amount;
+        _amountDisplay = '₱ ${_calculatedAmount.toStringAsFixed(2)}';
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _calculatedAmount = 0.0;
+        _amountDisplay = '₱ 0.00';
+        _isLoading = false;
+      });
+    }
+  }
 
   Future<void> _completeRetrieval() async {
     if (_selectedPaymentMethod == null || _isProcessing) {
@@ -48,6 +112,7 @@ class _PaymentPageState extends State<PaymentPage> {
       final lockerRef = db.ref('lockers/${widget.lockerId}');
       await lockerRef.child('command').set('OPEN');
 
+      // Delete helmet record after successful retrieval
       await FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
@@ -60,7 +125,7 @@ class _PaymentPageState extends State<PaymentPage> {
           context,
           MaterialPageRoute(
             builder: (context) => PaymentSuccessPage(
-              amount: '₱ 50.00',
+              amount: _amountDisplay,
               paymentMethod: _selectedPaymentMethod!,
             ),
           ),
@@ -98,6 +163,12 @@ class _PaymentPageState extends State<PaymentPage> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _calculatePayment();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
@@ -121,13 +192,25 @@ class _PaymentPageState extends State<PaymentPage> {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
-                '₱ 50.00',
+              _isLoading
+                  ? const Text(
+                'Calculating...',
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              )
+                  : Text(
+                _amountDisplay,
                 style: theme.textTheme.displaySmall?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: theme.colorScheme.onSurface,
                 ),
               ),
+
+              const SizedBox(height: 12),
+              if (!_isLoading && _calculatedAmount == 0.0)
+                const Text(
+                  'Within 10-minute grace period — Free',
+                  style: TextStyle(color: Colors.green, fontWeight: FontWeight.w500),
+                ),
 
               const SizedBox(height: 40),
 
@@ -153,18 +236,14 @@ class _PaymentPageState extends State<PaymentPage> {
                     return Card(
                       elevation: 0,
                       color: isSelected
-                          ? theme.colorScheme.primaryContainer.withValues(
-                              alpha: 0.6,
-                            )
+                          ? theme.colorScheme.primaryContainer.withValues(alpha: 0.6)
                           : theme.colorScheme.surfaceContainerLowest,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                         side: BorderSide(
                           color: isSelected
                               ? theme.colorScheme.primary
-                              : theme.colorScheme.outline.withValues(
-                                  alpha: 0.2,
-                                ),
+                              : theme.colorScheme.outline.withValues(alpha: 0.2),
                           width: isSelected ? 2 : 1,
                         ),
                       ),
@@ -221,14 +300,16 @@ class _PaymentPageState extends State<PaymentPage> {
 
               const SizedBox(height: 24),
 
-              // Continue Button - Fixed & Clean
+              // Continue Button
               SizedBox(
                 width: double.infinity,
                 child: CustomActionButton(
                   label: _isProcessing ? 'Processing...' : 'Continue',
                   bgColor: theme.colorScheme.primary,
                   textColor: theme.colorScheme.onPrimary,
-                  onPressed: _selectedPaymentMethod == null || _isProcessing
+                  onPressed: _selectedPaymentMethod == null ||
+                      _isProcessing ||
+                      _isLoading
                       ? null
                       : _completeRetrieval,
                 ),
