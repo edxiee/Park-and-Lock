@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 
+import '../firebase_options.dart';
+
 class SlotsPage extends StatelessWidget {
   const SlotsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final databaseUrl = Firebase.app().options.databaseURL;
+    final databaseUrl =
+        Firebase.app().options.databaseURL ??
+        DefaultFirebaseOptions.currentPlatform.databaseURL;
 
     if (databaseUrl == null || databaseUrl.isEmpty) {
       return Scaffold(

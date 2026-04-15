@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
+import '../firebase_options.dart';
 import '../widgets/custom_action_button.dart';
 import 'payment_success_page.dart';
 
@@ -23,7 +24,7 @@ class _PaymentPageState extends State<PaymentPage> {
   String _amountDisplay = '₱ 0.00';
   bool _isLoading = true;
 
-  // Calculate payment   
+  // Calculate payment
   Future<void> _calculatePayment() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -90,7 +91,9 @@ class _PaymentPageState extends State<PaymentPage> {
     }
 
     final user = FirebaseAuth.instance.currentUser;
-    final databaseUrl = Firebase.app().options.databaseURL;
+    final databaseUrl =
+        Firebase.app().options.databaseURL ??
+        DefaultFirebaseOptions.currentPlatform.databaseURL;
 
     if (user == null || databaseUrl == null || databaseUrl.isEmpty) {
       if (mounted) {
@@ -194,22 +197,28 @@ class _PaymentPageState extends State<PaymentPage> {
               const SizedBox(height: 8),
               _isLoading
                   ? const Text(
-                'Calculating...',
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-              )
+                      'Calculating...',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
                   : Text(
-                _amountDisplay,
-                style: theme.textTheme.displaySmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.onSurface,
-                ),
-              ),
+                      _amountDisplay,
+                      style: theme.textTheme.displaySmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
 
               const SizedBox(height: 12),
               if (!_isLoading && _calculatedAmount == 0.0)
                 const Text(
                   'Within 10-minute grace period — Free',
-                  style: TextStyle(color: Colors.green, fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
 
               const SizedBox(height: 40),
@@ -236,14 +245,18 @@ class _PaymentPageState extends State<PaymentPage> {
                     return Card(
                       elevation: 0,
                       color: isSelected
-                          ? theme.colorScheme.primaryContainer.withValues(alpha: 0.6)
+                          ? theme.colorScheme.primaryContainer.withValues(
+                              alpha: 0.6,
+                            )
                           : theme.colorScheme.surfaceContainerLowest,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                         side: BorderSide(
                           color: isSelected
                               ? theme.colorScheme.primary
-                              : theme.colorScheme.outline.withValues(alpha: 0.2),
+                              : theme.colorScheme.outline.withValues(
+                                  alpha: 0.2,
+                                ),
                           width: isSelected ? 2 : 1,
                         ),
                       ),
@@ -307,9 +320,10 @@ class _PaymentPageState extends State<PaymentPage> {
                   label: _isProcessing ? 'Processing...' : 'Continue',
                   bgColor: theme.colorScheme.primary,
                   textColor: theme.colorScheme.onPrimary,
-                  onPressed: _selectedPaymentMethod == null ||
-                      _isProcessing ||
-                      _isLoading
+                  onPressed:
+                      _selectedPaymentMethod == null ||
+                          _isProcessing ||
+                          _isLoading
                       ? null
                       : _completeRetrieval,
                 ),

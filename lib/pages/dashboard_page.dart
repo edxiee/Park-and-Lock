@@ -30,7 +30,7 @@ class DashboardPage extends StatelessWidget {
         ],
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -122,7 +122,7 @@ class DashboardPage extends StatelessWidget {
                 onTap: () => _navigateTo(context, const TutorialPage()),
               ),
 
-              const Spacer(),
+              const SizedBox(height: 28),
 
               // Logout Button (more subtle & modern)
               _buildLogoutButton(context),
